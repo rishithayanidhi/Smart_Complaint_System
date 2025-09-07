@@ -267,6 +267,12 @@ def get_profile(current_user: Dict[str, Any] = Depends(get_current_user)):
     info_logger.info(f"SYSTEM_INFO: Profile accessed - UserID: {current_user['id']}, Email: {current_user['email']}")
     return UserResponse(**current_user)
 
+# Health check endpoint (fast response)
+@app.get("/health")
+def health_check():
+    """Quick health check endpoint for API discovery"""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
 # Root endpoint
 @app.get("/")
 def root():

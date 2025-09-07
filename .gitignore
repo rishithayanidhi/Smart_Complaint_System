@@ -1,55 +1,29 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+# =============================================================================
+# SMART COMPLAINT SYSTEM - FLUTTER PROJECT .GITIGNORE
+# =============================================================================
 
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
+# =============================================================================
+# FLUTTER & DART SPECIFIC
+# =============================================================================
 
-# VS Code
-.vscode/
-
-# Backend Python files (should only be in backend/ folder)
-main.py
-db.py
-requirements.txt
-setup.sql
-setup_db.py
-.env
-__pycache__/
-*.pyc
-app.log
-
-# Temporary IP detection scripts
-find_ip.bat
-find_ip.ps1
-
-# Documentation files (keep only README.md)
-*_GUIDE.md
-*_SOLUTION.md
-*_COMPLETE.md
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# Flutter/Dart related
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
-/build/
-/coverage/
+build/
+**/doc/api/
+lib/generated_plugin_registrant.dart
+.fvm/
+
+# Coverage
+coverage/
+lcov.info
+
+# Flutter version management
+.fvmrc
 
 # Symbolication related
 app.*.symbols
@@ -57,27 +31,217 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# =============================================================================
+# PLATFORM SPECIFIC BUILD FILES
+# =============================================================================
+
+# Android
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/gradle/
+/android/.gradle/
+/android/captures/
+/android/gradlew
+/android/gradlew.bat
+/android/local.properties
+/android/app/google-services.json
+android/key.properties
 
-# Backend Python files (should only be in backend/ folder)
-main.py
-db.py
-requirements.txt
-setup.sql
-setup_db.py
-.env
-__pycache__/
-*.pyc
-app.log
+# iOS
+/ios/Flutter/flutter_export_environment.sh
+/ios/Flutter/.last_build_id
+/ios/Runner/GoogleService-Info.plist
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
 
-# Temporary IP detection scripts
+# macOS
+/macos/Flutter/Flutter-Generated.xcconfig
+/macos/Flutter/ephemeral/
+
+# Windows
+/windows/flutter/
+/windows/CMakeFiles/
+/windows/cmake_install.cmake
+/windows/CMakeCache.txt
+
+# Linux
+/linux/flutter/
+/linux/CMakeFiles/
+/linux/cmake_install.cmake
+/linux/CMakeCache.txt
+
+# Web
+/web/assets/
+
+# =============================================================================
+# BACKEND (PYTHON/FASTAPI) SPECIFIC
+# =============================================================================
+
+# Python
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.Python
+backend/env/
+backend/venv/
+backend/.venv/
+backend/ENV/
+backend/env.bak/
+backend/venv.bak/
+
+# Environment variables
+backend/.env
+backend/.env.local
+backend/.env.production
+backend/.env.staging
+
+# Database
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# Logs
+backend/logs/
+backend/*.log
+backend/app.log
+backend/error.log
+backend/system_*.log
+
+# FastAPI specific
+backend/.pytest_cache/
+backend/alembic/versions/*.py
+!backend/alembic/versions/__init__.py
+
+# =============================================================================
+# IDE & EDITOR SPECIFIC
+# =============================================================================
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+.vs/
+
+# Android Studio
+*.jks
+*.keystore
+
+# Xcode
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/UserInterfaceState.xcuserstate
+**/ios/**/project.xcworkspace/xcuserdata/
+**/ios/**/xcuserdata/
+**/ios/.generated/
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/.last_build_id
+**/ios/ServiceDefinitions.json
+
+# =============================================================================
+# SYSTEM & TEMPORARY FILES
+# =============================================================================
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# =============================================================================
+# PROJECT SPECIFIC
+# =============================================================================
+
+# Custom scripts (these appear to be development utilities)
 find_ip.bat
 find_ip.ps1
+start_server.bat
+start_server.ps1
+backend/find_my_ip.ps1
 
-# Documentation files (keep only README.md)
+# Documentation backups (keep only README.md)
 *_GUIDE.md
 *_SOLUTION.md
 *_COMPLETE.md
+*_BACKUP.md
+
+# Test coverage reports
+test_coverage/
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# API Keys and Secrets
+api_keys.dart
+secrets.dart
+config.dart
+
+# =============================================================================
+# DEPENDENCIES & PACKAGES
+# =============================================================================
+
+# Node modules (if using web dependencies)
+node_modules/
+
+# Pub cache
+.pub-cache/
+
+# Flutter build cache
+.build-cache/
+
+# =============================================================================
+# DEBUGGING & DEVELOPMENT
+# =============================================================================
+
+# Debug files
+*.dSYM/
+*.dSYM.zip
+
+# Profiling data
+*.trace
+
+# Memory dumps
+*.hprof
+
+# Crash logs
+*.crash
+
+# Development databases
+dev.db
+development.db
+test.db
+
+# Local configuration
+local.properties
+local_config.dart
