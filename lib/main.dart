@@ -35,15 +35,34 @@ Future<void> initializeApiUrl() async {
         print('✅ Found backend server at: $API_BASE_URL');
         return;
       }
+      // Continue to next IP
+    }
+  }
+
+  // If common IPs fail, do a broader scan (192.168.1.x range)
+  print('🔍 Scanning 192.168.1.x range...');
+  for (int i = 2; i <= 254; i++) {
+    String testUrl = 'http://192.168.1.$i:8000';
+
+    try {
+      final response = await http
+          .get(Uri.parse('$testUrl/health'))
+          .timeout(const Duration(milliseconds: 300));
+
+      if (response.statusCode == 200) {
+        API_BASE_URL = testUrl;
+        print('✅ Found backend server at: $API_BASE_URL');
+        return;
+      }
     } catch (e) {
       // Continue to next IP
     }
   }
 
-  // If common IPs fail, do a broader scan (only on 192.168.1.x range)
-  print('🔍 Scanning 192.168.1.x range...');
+  // Extended scan for 192.168.0.x range
+  print('🔍 Scanning 192.168.0.x range...');
   for (int i = 2; i <= 254; i++) {
-    String testUrl = 'http://192.168.1.$i:8000';
+    String testUrl = 'http://192.168.0.$i:8000';
 
     try {
       final response = await http
@@ -301,6 +320,9 @@ class _LoginPageState extends State<LoginPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
+        // Debug: Print the response data to understand the structure
+        debugPrint('Login response: ${response.body}');
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Welcome back, ${data['user']['full_name']}!'),
@@ -313,20 +335,42 @@ class _LoginPageState extends State<LoginPage> {
           MaterialPageRoute(builder: (_) => HomePage(userData: data['user'])),
         );
       } else {
+        // Debug: Print the error response
+        debugPrint('Login error response: ${response.body}');
         final errorData = json.decode(response.body);
+
+        // Handle both single string and array of error messages
+        String errorMessage = 'Login failed';
+        if (errorData['detail'] != null) {
+          if (errorData['detail'] is String) {
+            errorMessage = errorData['detail'];
+          } else if (errorData['detail'] is List) {
+            errorMessage = (errorData['detail'] as List).join(', ');
+          } else {
+            errorMessage = errorData['detail'].toString();
+          }
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorData['detail'] ?? 'Login failed'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       if (!mounted) return; // Check if widget is still mounted
       debugPrint('Login error: $e');
+      debugPrint('Login error details: ${e.toString()}');
+
+      String errorMessage;
+      if (e.toString().contains('is not a subtype of type')) {
+        errorMessage =
+            'Server response format error. Please try again or contact support.';
+      } else {
+        errorMessage = getErrorMessage(e);
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(getErrorMessage(e)),
+          content: Text(errorMessage),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 5),
         ),
