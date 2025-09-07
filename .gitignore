@@ -18,10 +18,28 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code
+.vscode/
+
+# Backend Python files (should only be in backend/ folder)
+main.py
+db.py
+requirements.txt
+setup.sql
+setup_db.py
+.env
+__pycache__/
+*.pyc
+app.log
+
+# Temporary IP detection scripts
+find_ip.bat
+find_ip.ps1
+
+# Documentation files (keep only README.md)
+*_GUIDE.md
+*_SOLUTION.md
+*_COMPLETE.md
 
 # Flutter/Dart/Pub related
 **/doc/api/
