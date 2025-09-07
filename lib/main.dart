@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 // Dynamic API Base URL - Will be auto-detected
-String API_BASE_URL = 'http://localhost:8000'; // Default fallback
+String apiBaseUrl = 'http://localhost:8000'; // Default fallback
 
 // Auto-detect the best API URL for real device testing
 Future<void> initializeApiUrl() async {
-  print('🔍 Auto-detecting backend server...');
+  debugPrint('🔍 Auto-detecting backend server...');
 
   // Most common IP addresses to try first (faster detection)
   List<String> commonIps = [
@@ -31,16 +31,18 @@ Future<void> initializeApiUrl() async {
           .timeout(const Duration(milliseconds: 800));
 
       if (response.statusCode == 200) {
-        API_BASE_URL = testUrl;
-        print('✅ Found backend server at: $API_BASE_URL');
+        apiBaseUrl = testUrl;
+        debugPrint('✅ Found backend server at: $apiBaseUrl');
         return;
       }
+      // Continue to next IP
+    } catch (e) {
       // Continue to next IP
     }
   }
 
   // If common IPs fail, do a broader scan (192.168.1.x range)
-  print('🔍 Scanning 192.168.1.x range...');
+  debugPrint('🔍 Scanning 192.168.1.x range...');
   for (int i = 2; i <= 254; i++) {
     String testUrl = 'http://192.168.1.$i:8000';
 
@@ -50,8 +52,8 @@ Future<void> initializeApiUrl() async {
           .timeout(const Duration(milliseconds: 300));
 
       if (response.statusCode == 200) {
-        API_BASE_URL = testUrl;
-        print('✅ Found backend server at: $API_BASE_URL');
+        apiBaseUrl = testUrl;
+        debugPrint('✅ Found backend server at: $apiBaseUrl');
         return;
       }
     } catch (e) {
@@ -60,7 +62,7 @@ Future<void> initializeApiUrl() async {
   }
 
   // Extended scan for 192.168.0.x range
-  print('🔍 Scanning 192.168.0.x range...');
+  debugPrint('🔍 Scanning 192.168.0.x range...');
   for (int i = 2; i <= 254; i++) {
     String testUrl = 'http://192.168.0.$i:8000';
 
@@ -70,8 +72,8 @@ Future<void> initializeApiUrl() async {
           .timeout(const Duration(milliseconds: 300));
 
       if (response.statusCode == 200) {
-        API_BASE_URL = testUrl;
-        print('✅ Found backend server at: $API_BASE_URL');
+        apiBaseUrl = testUrl;
+        debugPrint('✅ Found backend server at: $apiBaseUrl');
         return;
       }
     } catch (e) {
@@ -79,7 +81,9 @@ Future<void> initializeApiUrl() async {
     }
   }
 
-  print('❌ Backend server not found on any IP. Using fallback: $API_BASE_URL');
+  debugPrint(
+    '❌ Backend server not found on any IP. Using fallback: $apiBaseUrl',
+  );
 }
 
 // Helper function to handle API errors
@@ -87,16 +91,16 @@ String getErrorMessage(dynamic error) {
   if (error.toString().contains('Connection refused') ||
       error.toString().contains('Connection timed out')) {
     return 'Cannot connect to server.\n'
-        'Current API: $API_BASE_URL\n\n'
+        'Current API: $apiBaseUrl\n\n'
         'Please check:\n'
         '1. Backend server is running (python main.py)\n'
         '2. Phone and computer on same WiFi\n'
         '3. Restart app to re-detect IP';
   } else if (error.toString().contains('SocketException')) {
     return 'Network error. Please check your internet connection.\n'
-        'API: $API_BASE_URL';
+        'API: $apiBaseUrl';
   } else {
-    return 'Error connecting to: $API_BASE_URL\n\n'
+    return 'Error connecting to: $apiBaseUrl\n\n'
         'Details: ${error.toString()}';
   }
 }
@@ -307,7 +311,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('$API_BASE_URL/auth/login'),
+        Uri.parse('$apiBaseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': _emailController.text.trim(),
@@ -546,7 +550,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('$API_BASE_URL/auth/register'),
+        Uri.parse('$apiBaseUrl/auth/register'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'full_name': nameController.text.trim(),
