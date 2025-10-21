@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -18,21 +19,38 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Smart Complaint System - Report issues with location and photo attachments">
+
+  <!-- Required for geolocation API on web -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Permissions Policy for Location Access -->
+  <meta http-equiv="Permissions-Policy" content="geolocation=()">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="flutter_application_1">
+  <meta name="apple-mobile-web-app-title" content="Smart Complaint System">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
-  <title>flutter_application_1</title>
+  <title>Smart Complaint System</title>
   <link rel="manifest" href="manifest.json">
+
+  <script>
+    // Check if HTTPS is required for geolocation
+    window.addEventListener('load', function () {
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        console.warn('Geolocation requires HTTPS in production. Please use HTTPS for location features to work.');
+      }
+    });
+  </script>
 </head>
+
 <body>
   <script src="flutter_bootstrap.js" async></script>
 </body>
+
 </html>

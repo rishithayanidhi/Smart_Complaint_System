@@ -1,8 +1,13 @@
+// ignore_for_file: file_names
+
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'main.dart'; // Import for apiBaseUrl, ApiClient, getErrorMessage
-import 'home.dart'; // Import for HomePage
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'main.dart'; // apiBaseUrl, ApiClient
+import 'home.dart';
+
+final _secureStorage = const FlutterSecureStorage();
 
 class CustomTextField extends StatelessWidget {
   final String hint;
@@ -70,18 +75,31 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscureText = true;
   bool isLoading = false;
 
-  Future<void> login() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  // Auto-login if token exists
+  @override
+  void initState() {
+    super.initState();
+    _checkExistingSession();
+  }
 
-    setState(() {
-      isLoading = true;
-    });
+  Future<void> _checkExistingSession() async {
+    final token = await _secureStorage.read(key: 'access_token');
+    if (token != null && token.isNotEmpty && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage(userData: {})),
+      );
+    }
+  }
+
+  Future<void> login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => isLoading = true);
 
     try {
       final response = await ApiClient.post(
-        Uri.parse('$apiBaseUrl/auth/login'),
+        '/auth/login',
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': _emailController.text.trim(),
@@ -89,73 +107,42 @@ class _LoginPageState extends State<LoginPage> {
         }),
       );
 
-      if (!mounted) return; // Check if widget is still mounted
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        final token = data['access_token'] ?? '';
+        final user = data['user'];
 
-        // Debug: Print the response data to understand the structure
-        debugPrint('Login response: ${response.body}');
+        // Securely store token
+        await _secureStorage.write(key: 'access_token', value: token);
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Welcome back, ${data['user']['full_name']}!'),
+            content: Text('Welcome back, ${user['full_name']}!'),
             backgroundColor: Colors.green,
           ),
         );
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HomePage(userData: data['user'])),
+          MaterialPageRoute(builder: (_) => HomePage(userData: user)),
         );
       } else {
-        // Debug: Print the error response
-        debugPrint('Login error response: ${response.body}');
         final errorData = json.decode(response.body);
-
-        // Handle both single string and array of error messages
-        String errorMessage = 'Login failed';
-        if (errorData['detail'] != null) {
-          if (errorData['detail'] is String) {
-            errorMessage = errorData['detail'];
-          } else if (errorData['detail'] is List) {
-            errorMessage = (errorData['detail'] as List).join(', ');
-          } else {
-            errorMessage = errorData['detail'].toString();
-          }
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
-        );
+        final errorMessage = errorData['detail'] ?? 'Login failed.';
+        _showError(errorMessage);
       }
     } catch (e) {
-      if (!mounted) return; // Check if widget is still mounted
-      debugPrint('Login error: $e');
-      debugPrint('Login error details: ${e.toString()}');
-
-      String errorMessage;
-      if (e.toString().contains('is not a subtype of type')) {
-        errorMessage =
-            'Server response format error. Please try again or contact support.';
-      } else {
-        errorMessage = getErrorMessage(e);
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
-        ),
-      );
+      _showError('Network error: ${e.toString()}');
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      if (mounted) setState(() => isLoading = false);
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   @override
@@ -291,9 +278,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
+// ===================================================
+//  Sign-Up Page
+// ===================================================
+
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
-
   @override
   State<SignUpPage> createState() => _SignUpPageState();
 }
@@ -308,19 +298,15 @@ class _SignUpPageState extends State<SignUpPage> {
     if (nameController.text.isEmpty ||
         emailController.text.isEmpty ||
         passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+      _showError('Please fill all fields');
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     try {
       final response = await ApiClient.post(
-        Uri.parse('$apiBaseUrl/auth/register'),
+        '/auth/register',
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'full_name': nameController.text.trim(),
@@ -329,47 +315,40 @@ class _SignUpPageState extends State<SignUpPage> {
         }),
       );
 
-      if (!mounted) return; // Check if widget is still mounted
-
       if (response.statusCode == 201) {
         final data = json.decode(response.body);
+        final token = data['access_token'] ?? '';
+        await _secureStorage.write(key: 'access_token', value: token);
+
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Account created successfully! Welcome!'),
+            content: Text('Account created successfully!'),
             backgroundColor: Colors.green,
           ),
         );
 
-        // Navigate to HomePage with user data
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HomePage(userData: data['user'])),
+          MaterialPageRoute(
+            builder: (_) => HomePage(userData: data['user'] ?? {}),
+          ),
         );
       } else {
         final errorData = json.decode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorData['detail'] ?? 'Registration failed'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showError(errorData['detail'] ?? 'Registration failed.');
       }
     } catch (e) {
-      if (!mounted) return; // Check if widget is still mounted
-      debugPrint('Signup error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Network error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showError('Network error: ${e.toString()}');
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      if (mounted) setState(() => isLoading = false);
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   @override
